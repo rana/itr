@@ -53,14 +53,14 @@ impl Iterator for RngItr {
     }
 }
 
-/// Returns an iterator of random `u32s`.
+/// Returns an iterator generating random integers.
 ///
-/// Generates equal quantities of numbers represented
-/// by 1 byte, 2 bytes, 3 bytes, or 4 bytes.
-///
+/// Integers represented by 1-byte, 2-bytes, up to n-bytes
+/// are generated in equal quantities.
+/// 
 /// # Arguments
 ///
-/// * `lim` - The total number of elements.
+/// * `lim` - The total number of integers to generate.
 pub fn rnds_with_eq_byte<T>(lim: usize) -> RndEqlBytItr<T>
 where
     T: AsPrimitive<T>,
@@ -74,7 +74,7 @@ where
         phn: PhantomData,
     }
 }
-// A random `u32` iterator.
+/// An iterator generating random integers.
 #[derive(Debug, Clone)]
 pub struct RndEqlBytItr<T>
 where
@@ -92,9 +92,6 @@ impl<T> Iterator for RndEqlBytItr<T>
 where
     T: AsPrimitive<T>,
     usize: num::traits::AsPrimitive<T>,
-    //     // T: Default,
-    //     T: AsPrimitive<T>,
-    //     usize: num::traits::AsPrimitive<T>,
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
