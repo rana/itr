@@ -55,8 +55,8 @@ impl Iterator for RngItr {
 
 /// Returns an iterator generating random integers.
 ///
-/// Integers represented by 1-byte, 2-bytes, up to n-bytes
-/// are generated in equal quantities.
+/// Generates equal quantities of integers represented 
+/// by 1-byte, 2-bytes, up to n-bytes.
 /// 
 /// # Arguments
 ///
