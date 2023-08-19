@@ -59,7 +59,7 @@ impl Iterator for RngItr {
 /// by 1-byte, 2-bytes, up to n-bytes.
 ///
 /// Generates an infinite number of integers.
-pub fn rnds_with_eq_byte<T>() -> RndEqlBytItr<T>
+pub fn rnds_eql_byt<T>() -> RndEqlBytItr<T>
 where
     T: AsPrimitive<T>,
     usize: num::traits::AsPrimitive<T>,
@@ -127,7 +127,7 @@ mod tst {
 
     #[test]
     fn rnds_with_eq_byte_u64_n() {
-        for (idx, val) in rnds_with_eq_byte::<u64>().take(16).enumerate() {
+        for (idx, val) in rnds_eql_byt::<u64>().take(16).enumerate() {
             let byt_non_zro_cnt = (idx % mem::size_of::<u64>()) + 1;
             // println!(
             //     "byts:{:?}, byt_non_zro_cnt:{}",
@@ -146,7 +146,7 @@ mod tst {
 
     #[test]
     fn rnds_with_eq_byte_u32_n() {
-        for (idx, val) in rnds_with_eq_byte::<u32>().take(8).enumerate() {
+        for (idx, val) in rnds_eql_byt::<u32>().take(8).enumerate() {
             let byt_non_zro_cnt = (idx % mem::size_of::<u32>()) + 1;
             // println!(
             //     "byts:{:?}, byt_non_zro_cnt:{}",
@@ -165,7 +165,7 @@ mod tst {
 
     #[test]
     fn rnds_with_eq_byte_u16_n() {
-        for (idx, val) in rnds_with_eq_byte::<u16>().take(4).enumerate() {
+        for (idx, val) in rnds_eql_byt::<u16>().take(4).enumerate() {
             let byt_non_zro_cnt = (idx % mem::size_of::<u16>()) + 1;
             // println!(
             //     "byts:{:?}, byt_non_zro_cnt:{}",
@@ -184,7 +184,7 @@ mod tst {
 
     #[test]
     fn rnds_with_eq_byte_u8_n() {
-        for (idx, val) in rnds_with_eq_byte::<u8>().take(2).enumerate() {
+        for (idx, val) in rnds_eql_byt::<u8>().take(2).enumerate() {
             let byt_non_zro_cnt = (idx % mem::size_of::<u8>()) + 1;
             // println!(
             //     "byts:{:?}, byt_non_zro_cnt:{}",
