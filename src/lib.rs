@@ -53,15 +53,13 @@ impl Iterator for RngItr {
     }
 }
 
-/// Returns an iterator generating random integers.
+/// Returns an iterator which generates random integers.
 ///
-/// Generates equal quantities of integers represented 
+/// Generates equal quantities of integers represented
 /// by 1-byte, 2-bytes, up to n-bytes.
-/// 
-/// # Arguments
 ///
-/// * `lim` - The total number of integers to generate.
-pub fn rnds_with_eq_byte<T>(lim: usize) -> RndEqlBytItr<T>
+/// Generates an infinite number of integers.
+pub fn rnds_with_eq_byte<T>() -> RndEqlBytItr<T>
 where
     T: AsPrimitive<T>,
     usize: num::traits::AsPrimitive<T>,
@@ -69,8 +67,6 @@ where
     RndEqlBytItr {
         rng: thread_rng(),
         byt: 0,
-        idx: 0,
-        lim,
         phn: PhantomData,
     }
 }
@@ -83,8 +79,6 @@ where
 {
     rng: ThreadRng,
     byt: usize,
-    idx: usize,
-    lim: usize,
     phn: PhantomData<T>,
 }
 
@@ -95,31 +89,26 @@ where
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.idx == self.lim {
-            None
+        // Generate a random integer with `byt + 1` number of bytes.
+
+        // Determine min inclusive integer.
+        let lo: usize = if self.byt == 0 {
+            0
         } else {
-            // Generate a random integer with `byt + 1` number of bytes.
+            1 << (self.byt * 8)
+        };
 
-            // Determine min inclusive integer.
-            let lo: usize = if self.byt == 0 {
-                0
-            } else {
-                1 << (self.byt * 8)
-            };
+        // Determine max inclusive integer.
+        // Use u128 to allow shifting (1<<64)-1 for 64-bit integer.
+        let hi_inc: usize = ((1u128 << ((self.byt + 1) * 8) as u128) - 1) as usize;
 
-            // Determine max inclusive integer.
-            // Use u128 to allow shifting (1<<64)-1 for 64-bit integer.
-            let hi_inc: usize = ((1u128 << ((self.byt + 1) * 8) as u128) - 1) as usize;
+        // Generate the random integer.
+        let ret: usize = self.rng.gen_range(lo..=hi_inc);
 
-            // Generate the random integer.
-            let ret: usize = self.rng.gen_range(lo..=hi_inc);
+        // Prepare for the next iteration.
+        self.byt = (self.byt + 1) % mem::size_of::<Self::Item>();
 
-            // Prepare for the next iteration.
-            self.idx += 1;
-            self.byt = (self.byt + 1) % mem::size_of::<Self::Item>();
-
-            Some(ret.as_())
-        }
+        Some(ret.as_())
     }
 }
 
@@ -138,7 +127,7 @@ mod tst {
 
     #[test]
     fn rnds_with_eq_byte_u64_n() {
-        for (idx, val) in rnds_with_eq_byte::<u64>(16).enumerate() {
+        for (idx, val) in rnds_with_eq_byte::<u64>().take(16).enumerate() {
             let byt_non_zro_cnt = (idx % mem::size_of::<u64>()) + 1;
             // println!(
             //     "byts:{:?}, byt_non_zro_cnt:{}",
@@ -157,7 +146,7 @@ mod tst {
 
     #[test]
     fn rnds_with_eq_byte_u32_n() {
-        for (idx, val) in rnds_with_eq_byte::<u32>(8).enumerate() {
+        for (idx, val) in rnds_with_eq_byte::<u32>().take(8).enumerate() {
             let byt_non_zro_cnt = (idx % mem::size_of::<u32>()) + 1;
             // println!(
             //     "byts:{:?}, byt_non_zro_cnt:{}",
@@ -176,7 +165,7 @@ mod tst {
 
     #[test]
     fn rnds_with_eq_byte_u16_n() {
-        for (idx, val) in rnds_with_eq_byte::<u16>(4).enumerate() {
+        for (idx, val) in rnds_with_eq_byte::<u16>().take(4).enumerate() {
             let byt_non_zro_cnt = (idx % mem::size_of::<u16>()) + 1;
             // println!(
             //     "byts:{:?}, byt_non_zro_cnt:{}",
@@ -195,7 +184,7 @@ mod tst {
 
     #[test]
     fn rnds_with_eq_byte_u8_n() {
-        for (idx, val) in rnds_with_eq_byte::<u8>(2).enumerate() {
+        for (idx, val) in rnds_with_eq_byte::<u8>().take(2).enumerate() {
             let byt_non_zro_cnt = (idx % mem::size_of::<u8>()) + 1;
             // println!(
             //     "byts:{:?}, byt_non_zro_cnt:{}",
