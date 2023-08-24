@@ -7,10 +7,11 @@ use std::{mem, ops::Range};
 
 /// Returns a range iterator.
 ///
-///     seg=2, lim=6: [0..3, 3..6]
-///     seg=2, lim=7: [0..3, 3..6, 6..7]
+///     seg=2,  lim=6: [0..3, 3..6]
+///     seg=2,  lim=7: [0..4, 4..7]
+///     seg=4, lim=10: [0..3, 3..6, 6..8, 8..10]
 ///
-/// For odd `len`, the actual segment count is `seg + 1`.
+/// Ranges may have different lengths depending on the `lim % seg` remainder.
 ///
 /// # Arguments
 ///
@@ -22,6 +23,7 @@ pub fn rngs(seg: usize, lim: usize) -> RngItr {
         idx: 0,
         stp: lim.saturating_div(seg),
         lim,
+        stp_adj: lim % seg,
     }
 }
 
@@ -31,6 +33,7 @@ pub struct RngItr {
     idx: usize,
     stp: usize,
     lim: usize,
+    stp_adj: usize,
 }
 impl Iterator for RngItr {
     type Item = Range<usize>;
@@ -38,7 +41,13 @@ impl Iterator for RngItr {
         if self.idx == usize::MAX {
             None
         } else {
-            let lim = (self.idx + self.stp).min(self.lim);
+            let adj: usize = if self.stp_adj > 0 {
+                self.stp_adj -= 1;
+                1
+            } else {
+                0
+            };
+            let lim = (self.idx + self.stp + adj).min(self.lim);
             let rng = Range {
                 start: self.idx,
                 end: lim,
@@ -46,7 +55,7 @@ impl Iterator for RngItr {
             if lim == self.lim {
                 self.idx = usize::MAX;
             } else {
-                self.idx += self.stp;
+                self.idx += self.stp + adj;
             }
             Some(rng)
         }
@@ -121,7 +130,11 @@ mod tst {
         assert_eq!(rngs(2, 6).collect::<Vec<Range<usize>>>(), [0..3, 3..6]);
         assert_eq!(
             rngs(2, 7).collect::<Vec<Range<usize>>>(),
-            [0..3, 3..6, 6..7]
+            [0..4, 4..7]
+        );
+        assert_eq!(
+            rngs(4, 10).collect::<Vec<Range<usize>>>(),
+            [0..3, 3..6, 6..8, 8..10]
         );
     }
 
